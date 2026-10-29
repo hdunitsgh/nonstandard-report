@@ -1,0 +1,472 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <base target="_top">
+    <title>Issued Non-Standard Item Report</title>
+    
+    <style>
+        body { 
+            font-family: sans-serif; 
+            margin: 20px; 
+            background-color: #f8f9fa; 
+        }
+        .container { 
+            max-width: 850px; 
+            margin: 0 auto; 
+            background: white; 
+            padding: 30px; 
+            border-radius: 8px; 
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1); 
+        }
+        .header { 
+            text-align: center; 
+            margin-bottom: 20px; 
+        }
+        .header img { 
+            width: 120px; 
+            height: auto; 
+            display: block; 
+            margin: 0 auto 10px auto; 
+            border-radius: 50%;
+        }
+        h1 { 
+            color: #007bff; 
+            font-size: 1.8em; 
+            margin-bottom: 5px; 
+        }
+        h2 { 
+            color: #6c757d; 
+            font-size: 1.1em; 
+            font-weight: normal; 
+            margin-top: 0; 
+        }
+        h3 { 
+            margin-top: 25px; 
+            color: #343a40; 
+            border-bottom: 2px solid #007bff; 
+            padding-bottom: 5px; 
+            font-size: 1.2em;
+        }
+        label { 
+            display: block; 
+            margin-top: 15px; 
+            margin-bottom: 5px; 
+            font-weight: bold; 
+        }
+        select, button { 
+            width: 100%; 
+            padding: 10px; 
+            margin-bottom: 10px; 
+            border: 1px solid #ced4da; 
+            border-radius: 4px; 
+            box-sizing: border-box; 
+        }
+        
+        #filter-controls {
+            display: flex;
+            flex-wrap: wrap; 
+            gap: 15px;
+            align-items: flex-end;
+            margin-bottom: 30px;
+        }
+        #filter-controls div {
+            flex: 1 1 30%; 
+            min-width: 150px;
+        }
+        #runReportBtn {
+            flex-grow: 0;
+            width: 150px; 
+            background-color: #007bff;
+            color: white;
+            border: none;
+            cursor: pointer;
+            margin-top: 20px;
+        }
+        #runReportBtn:hover {
+            background-color: #0056b3;
+        }
+        
+        #summary-section {
+            display: flex;
+            justify-content: space-between;
+            gap: 10px;
+            margin-bottom: 30px;
+            padding: 15px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            background-color: #f0f8ff;
+        }
+        .summary-item {
+            flex: 1;
+            text-align: center;
+            padding: 5px;
+            border-right: 1px solid #eee;
+        }
+        .summary-item:last-child {
+            border-right: none;
+        }
+        .summary-label {
+            font-size: 0.8em; 
+            color: #555;
+            margin-bottom: 5px;
+        }
+        .summary-value {
+            font-size: 1.2em; 
+            font-weight: bold;
+            color: #007bff;
+        }
+        .summary-value.cost {
+            color: #28a745;
+        }
+        .summary-value.remaining {
+            color: #dc3545;
+        }
+
+        #table-container {
+            overflow-x: auto; 
+        }
+        #report-table {
+            min-width: 1000px; 
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 10px;
+            font-size: 0.8em; 
+        }
+        #report-table th, #report-table td {
+            border: 1px solid #ddd;
+            padding: 6px 4px; 
+            text-align: left;
+            vertical-align: top;
+        }
+        #report-table th {
+            background-color: #e9ecef;
+            color: #343a40;
+            text-transform: uppercase;
+            font-weight: bold;
+            white-space: nowrap;
+            cursor: pointer;
+            position: relative;
+        }
+        #report-table th::after {
+            content: '';
+            position: absolute;
+            right: 4px;
+            opacity: 0.3;
+        }
+        #report-table th.asc::after {
+            content: ' ▲';
+            opacity: 1;
+        }
+        #report-table th.desc::after {
+            content: ' ▼';
+            opacity: 1;
+        }
+        #message-area { margin-top: 20px; padding: 10px; border-radius: 4px; text-align: center; display: none; }
+        .error { background-color: #ffe6e6; color: red; }
+        
+        .footer {
+            margin-top: 40px;
+            padding-top: 15px;
+            border-top: 1px solid #ced4da;
+            font-size: 0.8em;
+            color: #6c757d;
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <div class="header">
+        <img src="https://lh3.googleusercontent.com/d/1tCDAMimy_b0x9kRmWNyYMn4voR9Ynr0J" alt="Logo">
+        <h1>Issued Non-Standard Item Report</h1>
+        <h2>Haemodialysis Unit, Sarawak General Hospital</h2>
+    </div>
+
+    <div id="filter-controls">
+        <div>
+            <label for="year">Year:</label>
+            <select id="year" required></select>
+        </div>
+        <div>
+            <label for="month">Month:</label>
+            <select id="month" required></select>
+        </div>
+        <div>
+            <label for="item">Item:</label>
+            <select id="item" required>
+                <option value="" disabled selected>Select an Item</option>
+                <option value="DLC 12F X 15cm">DLC 12F X 15cm</option>
+                <option value="DLC 12F X 20cm">DLC 12F X 20cm</option>
+                <option value="DLS 12F X 20cm">DLS 12F X 20cm</option>
+                <option value="DLS 12F X 24cm">DLS 12F X 24cm</option>
+                <option value="DLS 14F X 20cm">DLS 14F X 20cm</option>
+                <option value="DLS 14F X 24cm">DLS 14F X 24cm</option>
+                <option value="TLC 12F X 15cm">TLC 12F X 15cm</option>
+                <option value="TLS 12F X 20cm">TLS 12F X 20cm</option>
+                <option value="TLS 12F X 24cm">TLS 12F X 24cm</option>
+                <option value="DLC 10F X 12cm">DLC 10F X 12cm</option>
+                <option value="DLS 10F X 15cm">DLS 10F X 15cm</option>
+                <option value="DL 12F X 28cm">DL 12F X 28cm</option>
+                <option value="DL 12F X 36cm">DL 12F X 36cm</option>
+                <option value="DL (Cuffed) 14.5F X 42cm">DL (Cuffed) 14.5F X 42cm</option>
+                <option value="DL (Cuffed) 14.5F X 35cm">DL (Cuffed) 14.5F X 35cm</option>
+                <option value="DL (Cuffed) 14.5F X 23cm">DL (Cuffed) 14.5F X 23cm</option>
+                <option value="DL (Cuffed) 14.5F X 19cm">DL (Cuffed) 14.5F X 19cm</option>
+                <option value="Prismasol 5L/bag">Prismasol 5L/bag</option>
+                <option value="Prismaflex M100">Prismaflex M100</option>
+                <option value="OMNIset">OMNIset</option>
+                <option value="Oxiris Set">Oxiris Set</option>
+            </select>
+        </div>
+        <div style="flex-grow: 0;">
+            <button id="runReportBtn">Generate Report</button>
+        </div>
+    </div>
+    
+    <div id="message-area" class="error"></div>
+    
+    <div id="report-output" style="display: none;">
+        <h3>Summary</h3>
+        <div id="summary-section">
+            <div class="summary-item">
+                <div class="summary-label">Total b/f from previous month:</div>
+                <div class="summary-value" id="totalBroughtForward">0</div>
+            </div>
+            <div class="summary-item">
+                <div class="summary-label">Total in (Current Month):</div>
+                <div class="summary-value" id="totalIn">0</div>
+            </div>
+            <div class="summary-item">
+                <div class="summary-label">Total out (Current Month):</div>
+                <div class="summary-value" id="totalOut">0</div>
+            </div>
+            <div class="summary-item">
+                <div class="summary-label">Total Cost (MYR):</div>
+                <div class="summary-value cost" id="totalCost">0.00</div>
+            </div>
+            <div class="summary-item">
+                <div class="summary-label">Remaining Balance (EOM):</div>
+                <div class="summary-value remaining" id="totalRemaining">0</div>
+            </div>
+        </div>
+
+        <h3>Detailed Transactions</h3>
+        <div id="table-container">
+            <table id="report-table">
+                <thead>
+                    <tr>
+                        <th onclick="sortTable(0, 'date')" data-column="dateOfRequest">Date of Request</th>
+                        <th onclick="sortTable(1)" data-column="serialNo">Serial No.</th>
+                        <th onclick="sortTable(2)" data-column="lotNo">Lot No.</th>
+                        <th onclick="sortTable(3)" data-column="brand">Brand</th>
+                        <th onclick="sortTable(4, 'date')" data-column="dateOfUsage">Date of Usage</th>
+                        <th onclick="sortTable(5)" data-column="patientName">Patient Name</th>
+                        <th onclick="sortTable(6)" data-column="icNo">IC No.</th>
+                        <th onclick="sortTable(7)" data-column="wardBedNo">Ward/Bed No</th>
+                        <th onclick="sortTable(8)" data-column="hospital">Hospital</th>
+                        <th onclick="sortTable(9)" data-column="performedBy">Performed by</th>
+                        <th onclick="sortTable(10)" data-column="designation">Designation</th>
+                    </tr>
+                </thead>
+                <tbody id="report-table-body">
+                </tbody>
+            </table>
+        </div>
+    </div>
+    
+    <div class="footer">
+        &copy; Designed and developed by PPP Zulfadlie bin Janie<br>
+        for Haemodialysis Unit, Sarawak General Hospital
+    </div>
+</div>
+
+<script>
+    // Live Google Apps Script Web App Deployment URL
+    const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyRZPJxJQT84Z_lWA_9k3dj3gbHDYReRkmQD-uGgadIBTpavO02ToXPhO1jiSAwqdQ/exec";
+
+    const MONTHS = [
+        "January", "February", "March", "April", "May", "June", 
+        "July", "August", "September", "October", "November", "December"
+    ];
+
+    function populateDropdowns() {
+        const yearSelect = document.getElementById('year');
+        const monthSelect = document.getElementById('month');
+        const currentYear = new Date().getFullYear();
+
+        for (let y = 2025; y <= 2030; y++) {
+            const option = document.createElement('option');
+            option.value = y;
+            option.textContent = y;
+            yearSelect.appendChild(option);
+            if (y === currentYear) { option.selected = true; }
+        }
+
+        MONTHS.forEach((month, index) => {
+            const option = document.createElement('option');
+            option.value = index; 
+            option.textContent = month;
+            monthSelect.appendChild(option);
+            if (index === new Date().getMonth()) { option.selected = true; }
+        });
+    }
+
+    document.getElementById('runReportBtn').addEventListener('click', runReport);
+
+    let currentReportData = []; 
+    let sortState = { columnIndex: -1, direction: 'asc' }; 
+
+    function runReport() {
+        const year = document.getElementById('year').value;
+        const monthIndex = document.getElementById('month').value;
+        const itemDescription = document.getElementById('item').value;
+        const btn = document.getElementById('runReportBtn');
+        const messageArea = document.getElementById('message-area');
+        
+        messageArea.style.display = 'none';
+
+        if (!year || !monthIndex || !itemDescription) {
+            showMessage("Please select a Year, Month, and Item.", 'error');
+            return;
+        }
+
+        const filterData = {
+            year: year,
+            monthIndex: monthIndex,
+            itemDescription: itemDescription
+        };
+
+        btn.disabled = true;
+        btn.textContent = "Generating...";
+        document.getElementById('report-output').style.display = 'none';
+
+        fetch(SCRIPT_URL, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'text/plain;charset=utf-8',
+            },
+            body: JSON.stringify({
+                action: 'getIssuedConsumableData',
+                payload: filterData
+            })
+        })
+        .then(response => {
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+            return response.json();
+        })
+        .then(data => renderReport(data))
+        .catch(error => showError(error));
+    }
+    
+    function renderReport(data) {
+        const btn = document.getElementById('runReportBtn');
+        const outputDiv = document.getElementById('report-output');
+        
+        btn.disabled = false;
+        btn.textContent = "Generate Report";
+        
+        if (data.error) {
+            showError(data.error);
+            return;
+        }
+        
+        currentReportData = data.tableData;
+        sortState = { columnIndex: -1, direction: 'asc' }; 
+        
+        document.getElementById('totalBroughtForward').textContent = data.summary.totalBroughtForward;
+        document.getElementById('totalIn').textContent = data.summary.totalIn;
+        document.getElementById('totalOut').textContent = data.summary.totalOut;
+        document.getElementById('totalCost').textContent = data.summary.totalCost;
+        document.getElementById('totalRemaining').textContent = data.summary.totalRemaining;
+
+        updateTable(currentReportData);
+        
+        outputDiv.style.display = 'block';
+    }
+    
+    function updateTable(data) {
+        const tableBody = document.getElementById('report-table-body');
+        tableBody.innerHTML = ''; 
+        
+        if (data.length === 0) {
+             tableBody.innerHTML = '<tr><td colspan="11" style="text-align:center;">No requests found for the selected criteria.</td></tr>';
+        } else {
+            data.forEach(row => {
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td>${row.dateOfRequest}</td>
+                    <td>${row.serialNo}</td>
+                    <td>${row.lotNo}</td>
+                    <td>${row.brand}</td> 
+                    <td>${row.dateOfUsage}</td>       <!-- Col G (Date of Usage) -->
+                    <td>${row.patientName}</td>       <!-- Col C (Patient Name) -->
+                    <td>${row.icNo}</td>              <!-- Col D (IC No.) -->
+                    <td>${row.wardBedNo}</td>         <!-- Col E (Ward/Bed No) -->
+                    <td>${row.hospital}</td>          <!-- Col F (Hospital) -->
+                    <td>${row.performedBy}</td>       <!-- Col H (Performed by) -->
+                    <td>${row.designation}</td>       <!-- Col I (Designation) -->
+                `;
+                tableBody.appendChild(tr);
+            });
+        }
+        document.querySelectorAll('#report-table th').forEach(header => header.className = '');
+    }
+
+    function sortTable(columnIndex, type = 'string') {
+        const headers = document.querySelectorAll('#report-table th');
+        const columnKey = headers[columnIndex].getAttribute('data-column');
+
+        let direction = 'asc';
+        if (sortState.columnIndex === columnIndex && sortState.direction === 'asc') {
+            direction = 'desc';
+        }
+
+        currentReportData.sort((a, b) => {
+            let valA = a[columnKey];
+            let valB = b[columnKey];
+
+            if (type === 'date') {
+                if (valA !== 'N/A' && valA.includes('/')) valA = valA.split('/').reverse().join('-');
+                if (valB !== 'N/A' && valB.includes('/')) valB = valB.split('/').reverse().join('-');
+            }
+            
+            if (valA === 'N/A') return direction === 'asc' ? 1 : -1;
+            if (valB === 'N/A') return direction === 'asc' ? -1 : 1;
+
+            if (valA < valB) return direction === 'asc' ? -1 : 1;
+            if (valA > valB) return direction === 'asc' ? 1 : -1;
+            return 0;
+        });
+
+        sortState = { columnIndex: columnIndex, direction: direction };
+        
+        headers.forEach((header, index) => {
+            header.className = '';
+            if (index === columnIndex) {
+                header.className = direction;
+            }
+        });
+        
+        updateTable(currentReportData);
+    }
+
+    function showError(error) {
+        const btn = document.getElementById('runReportBtn');
+        btn.disabled = false;
+        btn.textContent = "Generate Report";
+        showMessage("An error occurred: " + error, 'error');
+    }
+
+    function showMessage(text, type) {
+        const messageArea = document.getElementById('message-area');
+        messageArea.textContent = text;
+        messageArea.className = type;
+        messageArea.style.display = 'block';
+    }
+
+    window.onload = populateDropdowns;
+</script>
+</body>
+</html>
